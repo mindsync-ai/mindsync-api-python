@@ -1,4 +1,4 @@
-from mindsync.api import Api
+import click
 
 
 def main():
