@@ -83,5 +83,4 @@ class Api:
         self.__async_api = AsyncApi(key, base_url)
 
     def profile(self):
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.__async_api.profile())
+        return asyncio.run(self.__async_api.profile())
