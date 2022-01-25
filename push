@@ -35,10 +35,6 @@ while [ "${#}" -gt 0 ]; do
         ;;
 
         *)
-            # echo -e "\033[0;31mUnrecognized argument: ${1}\033[0m" > /dev/stderr
-            # usage
-            # exit 1
-
             POSITIONAL+=("${1}")
         ;;
     esac
@@ -61,7 +57,7 @@ cd "${SCRIPT_DIR}"
 python -m build
 
 if [ "${USE_TEST_PYPI}" -ne 0 ]; then
-    echo -e "\033[0;36mUsing test repository\033[0m"
+    echo -e "\033[0;33mUsing test repository\033[0m"
     twine upload --repository testpypi "${SCRIPT_DIR}/dist/*" "${POSITIONAL[@]}"
 else
     echo -e "\033[0;33mUsing production repository\033[0m"

@@ -35,9 +35,9 @@ class CliHandler:
         self.__print_rv(rv, args)
 
 
-    def rig_tarrifs(self, args):
+    def rig_tariffs(self, args):
         api = self.__api
-        self.__print_rv(api.rig_tarrifs(rig_id=args.id), args)
+        self.__print_rv(api.rig_tariffs(rig_id=args.id), args)
 
 
     def rents_list(self, args):
@@ -71,7 +71,7 @@ class CliHandler:
 
     def set_rent(self, args):
         api = self.__api
-        rv = api.rent_info(rent_id=args.id, enable=args.enable, login=args.login, password=args.password)
+        rv = api.set_rent(rent_id=args.id, enable=args.enable, login=args.login, password=args.password)
         self.__print_rv(rv, args)
 
 

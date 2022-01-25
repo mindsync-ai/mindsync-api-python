@@ -104,8 +104,8 @@ class AsyncApi:
         return await self.__put(url, args, 'Unable to set rig parameters')
 
 
-    async def rig_tarrifs(self, rig_id):
-        '''Gets rig tarrifs for all or certain rig.
+    async def rig_tariffs(self, rig_id):
+        '''Gets rig tariffs for all or certain rig.
 
         @param rig_id Rig's identifier within the platform.
         @return Returns tariffs information in JSON.

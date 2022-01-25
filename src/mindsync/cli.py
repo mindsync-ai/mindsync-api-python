@@ -58,7 +58,7 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     rig_info_set_parser.add_argument('--power-cost', type=float, help='Sets the power cost')
     # rig/tariffs
     rig_info_set_parser = rig_sp.add_parser('tariffs', help='Get tariffs.')
-    rig_info_set_parser.set_defaults(handler=cli_handler.rig_tarrifs)
+    rig_info_set_parser.set_defaults(handler=cli_handler.rig_tariffs)
     rig_info_set_parser.add_argument('--id', default=None, help='Rig id to get tariffs of')
     # rent
     rent_parser = sp.add_parser('rent', help='Mindsync platform rents related actions. By default returns...')
