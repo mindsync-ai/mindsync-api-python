@@ -8,7 +8,7 @@ class CliHandler:
 
     def profile(self, args):
         api = self.__api
-        self.__print_rv(api.profile(args.id), args)
+        self.__print_rv(api.profile(user_id=args.id), args)
 
 
     def set_profile(self, args):
@@ -60,6 +60,18 @@ class CliHandler:
     def rent_state(self, args):
         api = self.__api
         rv = api.rent_state(rent_id=args.id)
+        self.__print_rv(rv, args)
+
+
+    def rent_info(self, args):
+        api = self.__api
+        rv = api.rent_info(rent_id=args.id)
+        self.__print_rv(rv, args)
+
+
+    def set_rent(self, args):
+        api = self.__api
+        rv = api.rent_info(rent_id=args.id, enable=args.enable, login=args.login, password=args.password)
         self.__print_rv(rv, args)
 
 

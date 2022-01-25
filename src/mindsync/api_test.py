@@ -153,3 +153,28 @@ async def test_rent_state_must_do_proper_http_request(sut, api_key, aiohttp_requ
     assert 'OK' == result
     aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}',
                                             headers={'api-key': api_key}, raise_for_status=True)
+
+
+@pytest.mark.asyncio
+async def test_rent_info_must_do_proper_http_request(sut, api_key, aiohttp_request_mock, resp_mock):
+    resp_mock.json.return_value = dict(result='OK')
+    result = await sut.rent_state(rent_id=RENT_ID)
+
+    assert 'OK' == result
+    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}',
+                                            headers={'api-key': api_key}, raise_for_status=True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('args, expected_args', [(dict(rent_id=RENT_ID, enable=True, login='login', password='password'), 
+                                                 dict(isEnable=True, login='login', password='password'))])
+async def test_set_rent_must_do_proper_http_request(sut, args, expected_args, api_key, 
+                                                         aiohttp_request_mock, resp_mock):
+    resp_mock.json.return_value = dict(result='OK')
+    result = await sut.set_rent(**args)
+
+    assert 'OK' == result
+    aiohttp_request_mock.assert_called_with(method='PUT', 
+                                            url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}', 
+                                            json=expected_args,
+                                            headers={'api-key': api_key}, raise_for_status=True)

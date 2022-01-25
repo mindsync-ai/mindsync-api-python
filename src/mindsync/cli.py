@@ -19,6 +19,7 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
                         help='Mindsync API base url. If not specified an attempt to use MINDSYNC_BASE_URL variable will be performed '
                              f'(default: {DEFAULT_BASE_URL})')
     parser.add_argument('--prettify', action='store_true', help='Prettify json output (default: %(default)s)')
+    parser.add_argument('--log-level', default='INFO', help='Logging level from standard python logging module (default: %(default)s)')
     sp = parser.add_subparsers(title='subcommands', help='Use these subcommands to interact with the Mindsync platform')
     # profile
     profile_parser = sp.add_parser('profile', help='Mindsync platform profile related actions. By default returns user profile.')
@@ -26,17 +27,17 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     profile_parser.add_argument('--id', default=None, help='User id to get profile for')
     profile_sp = profile_parser.add_subparsers(title='profile subcommands', help='Profile related subcommands')
     # profile/set
-    profile_set_parser = profile_sp.add_parser('set', help='Sets account properties.')
+    profile_set_parser = profile_sp.add_parser('set', help='Sets profile properties.')
     profile_set_parser.set_defaults(handler=cli_handler.set_profile)
-    profile_set_parser.add_argument('--first-name', help='Set account\'s first name')
-    profile_set_parser.add_argument('--last-name', help='Set account\'s last name')
-    profile_set_parser.add_argument('--phone', help='Set account\'s phone number')
-    profile_set_parser.add_argument('--gravatar', help='Set account\'s gravatar')
-    profile_set_parser.add_argument('--nickname', help='Set account\'s nickname')
-    profile_set_parser.add_argument('--wallet_symbol', help='Set account\'s wallet_symbol')
-    profile_set_parser.add_argument('--wallet_address', help='Set account\'s wallet_address')
-    profile_set_parser.add_argument('--country', help='Set account\'s country')
-    profile_set_parser.add_argument('--city', help='Set account\'s city')
+    profile_set_parser.add_argument('--first-name', help='Set profile\'s first name')
+    profile_set_parser.add_argument('--last-name', help='Set profile\'s last name')
+    profile_set_parser.add_argument('--phone', help='Set profile\'s phone number')
+    profile_set_parser.add_argument('--gravatar', help='Set profile\'s gravatar')
+    profile_set_parser.add_argument('--nickname', help='Set profile\'s nickname')
+    profile_set_parser.add_argument('--wallet_symbol', help='Set profile\'s wallet_symbol')
+    profile_set_parser.add_argument('--wallet_address', help='Set profile\'s wallet_address')
+    profile_set_parser.add_argument('--country', help='Set profile\'s country')
+    profile_set_parser.add_argument('--city', help='Set profile\'s city')
     # rig
     rig_parser = sp.add_parser('rig', help='Mindsync platform rigs related actions. By default return all the rigs list.')
     rig_sp = rig_parser.add_subparsers(title='rigs subcommands', help='Rigs related subcommands')
@@ -72,16 +73,27 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     rent_start_parser.add_argument('--id', required=True, help='Rig id to rent')
     rent_start_parser.add_argument('--tariff', required=True, choices=['demo', 'dynamic', 'fixed'], help='Tarrif to use')
     # rent/stop
-    rent_start_parser = rent_sp.add_parser('stop', help='Stops rent certain rent')
-    rent_start_parser.set_defaults(handler=cli_handler.stop_rent)
-    rent_start_parser.add_argument('--id', required=True, help='Rent id to stop in uuid format')
+    rent_stop_parser = rent_sp.add_parser('stop', help='Stops rent certain rent')
+    rent_stop_parser.set_defaults(handler=cli_handler.stop_rent)
+    rent_stop_parser.add_argument('--id', required=True, help='Rent id to stop in uuid format')
     # rent/state
-    rent_start_parser = rent_sp.add_parser('state', help='Returns rent state')
-    rent_start_parser.set_defaults(handler=cli_handler.rent_state)
-    rent_start_parser.add_argument('--id', required=True, help='Rent id to get state for in uuid format')
+    rent_state_parser = rent_sp.add_parser('state', help='Returns rent state')
+    rent_state_parser.set_defaults(handler=cli_handler.rent_state)
+    rent_state_parser.add_argument('--id', required=True, help='Rent id to retrieve state for in uuid format')
+    # rent/info
+    rent_info_parser = rent_sp.add_parser('info', help='Returns rent info')
+    rent_info_parser.set_defaults(handler=cli_handler.rent_info)
+    rent_info_parser.add_argument('--id', required=True, help='Rent id to retrieve info for')
+    # rent/set
+    rent_set_parser = rent_sp.add_parser('set', help='Sets rent parameters')
+    rent_set_parser.set_defaults(handler=cli_handler.set_rent)
+    rent_set_parser.add_argument('--id', required=True, help='Rent id to retrieve info for')
+    rent_set_parser.add_argument('--enable', dest='enable', action='store_true', help='Enables rent')
+    rent_set_parser.add_argument('--disable', dest='enable', action='store_false', help='Disables rent')
+    rent_set_parser.add_argument('--login', help='Protect rent with login/password')
+    rent_set_parser.add_argument('--password', help='Protect rent with login/password')
 
     args = parser.parse_args(args)
-    logging.debug(f'CLI Args: [{args}]')
     effective_args = purge(vars(args))
 
     del effective_args['help']
@@ -92,9 +104,25 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
+    try:
+        _main()
+    except SystemExit:
+        raise
+    except MindsyncCliError as e:
+        print(e.args[0], file=sys.stderr)
+        e.args[1].print_help()
+
+
+def _main():
     cli_handler = CliHandler()
     args, parser = parse_command_line(cli_handler)
+    logging.basicConfig(level=args.log_level)
+    logging.debug(f'CLI Args: [{args}]')
+
+    if args is not None and args.help:
+        parser.print_help()
+        return
+
     if args is None or not hasattr(args, 'handler'):
         raise MindsyncCliError('No command specified', parser)
 
@@ -104,4 +132,3 @@ def main():
     api = Api(args.api_key, args.base_url)
     cli_handler.bind(api)
     args.handler(args)
-

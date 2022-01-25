@@ -17,7 +17,7 @@ def purge(obj):
         return obj
 
 
-DEFAULT_BASE_URL = 'https://api.mindsync.ai'
+DEFAULT_BASE_URL = 'https://mainnet-api.mindsync.ai'
 API_VERSION = '1.0'
 
 
@@ -172,6 +172,34 @@ class AsyncApi:
         return await self.__get(url, 'Unable to get rent state')
 
 
+    async def rent_info(self, rent_id):
+        '''Returns rent info.
+
+        @param rent_id Rents's identifier.
+        @return Returns rent info in JSON.
+        '''
+
+        url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{rent_id}')
+        return await self.__get(url, 'Unable to get rent info')
+
+
+    async def set_rent(self, rent_id, enable, login, password):
+        '''Sets rent parameters.
+
+        @param rent_id Rent's identifier within the platform.
+        @param enable ...
+        @param login Protect your rent with login/password
+        @param password Protect your rent with login/password
+        @return Returns the result of operation metadata.
+        '''
+        url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{rent_id}')
+        args = purge(dict(isEnable=enable, login=login, password=password))
+        if not args:
+            raise MindsyncApiError('Invalid arguments, nothing to set')
+
+        return await self.__put(url, args, 'Unable to set rent parameters')
+
+
     async def __get(self, url, err_message):
         logger = self.__logger
         logger.debug(f'Get [{url}]')
@@ -221,8 +249,8 @@ class AsyncApi:
 class Api:
     def __init__(self, key, base_url=DEFAULT_BASE_URL):
         def wrap_method(func):
-            def method(**kwargs):
-                return asyncio.run(func(**kwargs))
+            def method(*args, **kwargs):
+                return asyncio.run(func(*args, **kwargs))
             return method
 
         self.__async_api = AsyncApi(key, base_url)
