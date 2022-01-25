@@ -18,7 +18,7 @@ pip install mindsync
 
 ### CLI
 
-After that `mindsync` command will be available from command line.
+After that `mindsync` command will be available from the command line.
 
 To get the cli description please use `mindsync --help` or e.g. `mindsync profile --help` to get help on certain command.
 Api key and api base url can be specified by environment variables `MINDSYNC_API_KEY` and `MINDSYNC_BASE_URL`.
@@ -52,7 +52,7 @@ from mindsync.api import Api
 
 API_KEY = 'fd3f8479b0b6b9868bff9bfadfefe69d'
 
-api = AsyncApi(API_KEY)
+api = Api(API_KEY)
 print(api.profile())
 ```
 
