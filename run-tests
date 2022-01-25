@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 SCRIPT_DIR=$(realpath "$(dirname "${0}")")
-VENV_DIR=${SCRIPT_DIR}/.venv
+VENV_DIR="${SCRIPT_DIR}/.venv"
 POSITIONAL=()
 
 
