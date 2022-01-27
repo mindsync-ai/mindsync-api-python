@@ -10,8 +10,9 @@ class CliHandler:
         # make method stubs
         def create_method(name):
             def method(**kwargs):
-                api = self.__api
-                if not api:
+                try:
+                    api = self.__api
+                except AttributeError:
                     raise MindsyncCliError('Api object is not binded')
 
                 func = getattr(api, name)

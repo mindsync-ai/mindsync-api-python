@@ -1,5 +1,6 @@
 from mindsync.cli_handler import CliHandler
 from mindsync.api import Api, AsyncApi
+from mindsync.exc import MindsyncCliError
 
 import pytest
 from unittest.mock import create_autospec, Mock
@@ -27,6 +28,11 @@ def sut(api_mock):
     sut = CliHandler()
     sut.bind(api_mock)
     return sut
+
+
+@pytest.fixture
+def empty_sut():
+    return CliHandler()
 
 
 # in this test check only few of methods for delegate logic, the second test checks that all methods exist
@@ -57,4 +63,14 @@ def test_cli_handler_must_define_all_the_methods(sut):
         original_methods = { name for name, _ in inspect.getmembers(AsyncApi, predicate=inspect.isfunction) if '__' not in name }
         sut_methods = { name for name, _ in inspect.getmembers(sut, predicate=inspect.isfunction) if '__' not in name }
         assert original_methods == sut_methods
-    
+
+
+def test_cli_handler_must_raise_if_not_binded(empty_sut):
+    with pytest.raises(ValueError):
+        empty_sut.bind(None)
+
+    with pytest.raises(MindsyncCliError):
+        empty_sut.profile()
+
+    with pytest.raises(MindsyncCliError):
+        empty_sut.rigs_list()
