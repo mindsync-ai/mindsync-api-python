@@ -132,7 +132,11 @@ def _main():
 
     api = Api(args.api_key, args.base_url)
     cli_handler.bind(api)
-    rv = args.handler(**vars(args))
+    dict_args = vars(args)
+    if not args.meta:
+        dict_args.pop('meta', None)
+
+    rv = args.handler(**dict_args)
     _print(rv, args)
 
 

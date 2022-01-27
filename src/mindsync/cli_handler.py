@@ -20,7 +20,6 @@ class CliHandler:
             return method
 
         methods = inspect.getmembers(AsyncApi, predicate=inspect.isfunction)
-        print(methods)
         for m in methods:
             name, _ = m
             if '__' not in name:
