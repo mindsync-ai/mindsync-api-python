@@ -1,10 +1,11 @@
 from mindsync.cli_handler import CliHandler
-from mindsync.api import Api
+from mindsync.api import Api, AsyncApi
 
 import pytest
 from unittest.mock import create_autospec, Mock
 
 from argparse import Namespace
+import inspect
 
 
 API_KEY = 'does-not-matter'
@@ -28,51 +29,32 @@ def sut(api_mock):
     return sut
 
 
+# in this test check only few of methods for delegate logic, the second test checks that all methods exist
 @pytest.mark.parametrize('kwargs, expected_kwargs, method, rv', [
-                                                            (Namespace(id=USER_ID, prettify=False, whatever='whatever'), 
-                                                            dict(user_id=USER_ID), 
+                                                            (dict(id=USER_ID, prettify=False, whatever='whatever'), 
+                                                            dict(id=USER_ID, prettify=False, whatever='whatever'), 
                                                             'profile', '{}'),
-                                                            (Namespace(prettify=False, first_name='first_name', last_name='last_name', phone='phone',
+                                                            (dict(prettify=False, first_name='first_name', last_name='last_name', phone='phone',
                                                                        gravatar='gravatar', nickname='nickname', wallet_symbol='wallet_symbol',
                                                                        wallet_address='wallet_address', country='country', city='city'), 
-                                                            dict(first_name='first_name', last_name='last_name', phone='phone',
+                                                            dict(prettify=False, first_name='first_name', last_name='last_name', phone='phone',
                                                                  gravatar='gravatar', nickname='nickname', wallet_symbol='wallet_symbol',
                                                                  wallet_address='wallet_address', country='country', city='city'), 
                                                             'set_profile', '{}'),
-                                                            (Namespace(my=True, prettify=False, whatever='whatever'), 
-                                                            dict(my=True), 
+                                                            (dict(my=True, prettify=False, whatever='whatever'), 
+                                                            dict(my=True, prettify=False, whatever='whatever'), 
                                                             'rigs_list', '{}'),
-                                                            (Namespace(id=RIG_ID, prettify=False), 
-                                                            dict(rig_id=RIG_ID), 
-                                                            'rig_info', '{}'),
-                                                            (Namespace(id=RIG_ID, enable=True, power_cost=0.33, prettify=False), 
-                                                            dict(rig_id=RIG_ID, enable=True, power_cost=0.33), 
-                                                            'set_rig', '{}'),
-                                                            (Namespace(id=RIG_ID, prettify=False), 
-                                                            dict(rig_id=RIG_ID), 
-                                                            'rig_tariffs', '{}'),
-                                                            (Namespace(my=True, prettify=False), 
-                                                            dict(my=True), 
-                                                            'rents_list', '{}'),
-                                                            (Namespace(id=RIG_ID, tariff='the tariff name', prettify=False), 
-                                                            dict(rig_id=RIG_ID, tariff_name='the tariff name'), 
-                                                            'start_rent', '{}'),
-                                                            (Namespace(id=RENT_ID, prettify=False), 
-                                                            dict(rent_id=RENT_ID), 
-                                                            'stop_rent', '{}'),
-                                                            (Namespace(id=RENT_ID, prettify=False), 
-                                                            dict(rent_id=RENT_ID), 
-                                                            'rent_state', '{}'),
-                                                            (Namespace(id=RENT_ID, prettify=False), 
-                                                            dict(rent_id=RENT_ID), 
-                                                            'rent_info', '{}'),
-                                                            (Namespace(id=RENT_ID, enable=True, login='user', password='asdf', prettify=False), 
-                                                            dict(rent_id=RENT_ID, enable=True, login='user', password='asdf'), 
-                                                            'set_rent', '{}'),
                                                             ])
 def test_cli_handler_must_delegate_to_right_api(sut, api_mock, kwargs, expected_kwargs, method, rv):
     mock_f = getattr(api_mock, method)
     mock_f.return_value = rv
     sut_f = getattr(sut, method)
-    sut_f(kwargs)
+    sut_f(**kwargs)
     mock_f.assert_called_with(**expected_kwargs)
+
+
+def test_cli_handler_must_define_all_the_methods(sut):
+        original_methods = { name for name, _ in inspect.getmembers(AsyncApi, predicate=inspect.isfunction) if '__' not in name }
+        sut_methods = { name for name, _ in inspect.getmembers(sut, predicate=inspect.isfunction) if '__' not in name }
+        assert original_methods == sut_methods
+    

@@ -8,7 +8,7 @@ from aiohttp import ClientResponse, ClientConnectionError
 
 API_KEY = 'an-api-key'
 USER_ID = 'an-user-id'
-RESPONSE_RV = dict(result=dict(first_name='Elvis', last_name='Presley'))
+RESPONSE_RV = dict(result=dict(first_name='Elvis', last_name='Presley'), whatever='whatever')
 RIG_ID = 'a-rig-id'
 RENT_ID = 'a-rent-id'
 API_VERSION = '1.0'
@@ -38,13 +38,14 @@ def aiohttp_request_mock(resp_mock):
         yield mock
 
 
-@pytest.mark.parametrize('user_id, url', [(None, f'{DEFAULT_BASE_URL}/api/1.0/users/client/profile'), 
-                                          (USER_ID, f'{DEFAULT_BASE_URL}/api/1.0/users/profile/{USER_ID}')])
 @pytest.mark.asyncio                                          
-async def test_profile_must_do_proper_http_request(sut, user_id, url, api_key, aiohttp_request_mock):
-    result = await sut.profile(user_id)
+@pytest.mark.parametrize('user_id, url, kwargs, expected_result', 
+                        [(None, f'{DEFAULT_BASE_URL}/api/1.0/users/client/profile', dict(), RESPONSE_RV['result']), 
+                         (USER_ID, f'{DEFAULT_BASE_URL}/api/1.0/users/profile/{USER_ID}', dict(meta=None), RESPONSE_RV)])
+async def test_profile_must_do_proper_http_request(sut, user_id, url, kwargs, expected_result, api_key, aiohttp_request_mock):
+    result = await sut.profile(user_id, **kwargs)
 
-    assert RESPONSE_RV['result'] == result
+    assert expected_result == result
     aiohttp_request_mock.assert_called_with(method='GET', url=url, 
                                             headers={'api-key': api_key}, raise_for_status=True)
 
@@ -101,14 +102,15 @@ async def test_rigs_info_must_do_proper_http_request(sut, api_key, aiohttp_reque
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('args, expected_args', [(dict(rig_id=RIG_ID, enable=True, power_cost=0.25), 
-                                                 dict(isEnable=True, powerCost=0.25))])
-async def test_set_rig_must_do_proper_http_request(sut, args, expected_args, api_key, 
-                                                         aiohttp_request_mock, resp_mock):
-    resp_mock.json.return_value = dict(result='OK')
+@pytest.mark.parametrize('args, expected_args, expected_result', [
+                         (dict(rig_id=RIG_ID, enable=True, power_cost=0.25, meta=None), dict(isEnable=True, powerCost=0.25), RESPONSE_RV),
+                         (dict(rig_id=RIG_ID, enable=True, power_cost=0.25), dict(isEnable=True, powerCost=0.25), RESPONSE_RV['result']),
+                         ])
+async def test_set_rig_must_do_proper_http_request(sut, args, expected_args, expected_result, api_key, 
+                                                   aiohttp_request_mock, resp_mock):
     result = await sut.set_rig(**args)
 
-    assert 'OK' == result
+    assert expected_result == result
     aiohttp_request_mock.assert_called_with(method='PUT', 
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rigs/{RIG_ID}', 
                                             json=expected_args,
@@ -131,14 +133,13 @@ async def test_start_rent_must_do_proper_http_request(sut, args, expected_args, 
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('args, expected_args', [(dict(rent_id=RENT_ID), 
-                                                 dict(hash=RENT_ID))])
-async def test_stop_rent_must_do_proper_http_request(sut, args, expected_args, api_key, 
+@pytest.mark.parametrize('args, expected_args, expected_result', [(dict(rent_id=RENT_ID, meta=None), dict(hash=RENT_ID), RESPONSE_RV),
+                                                                  (dict(rent_id=RENT_ID), dict(hash=RENT_ID), RESPONSE_RV['result'])])
+async def test_stop_rent_must_do_proper_http_request(sut, args, expected_args, expected_result, api_key, 
                                                          aiohttp_request_mock, resp_mock):
-    resp_mock.json.return_value = dict(result='OK')
     result = await sut.stop_rent(**args)
 
-    assert 'OK' == result
+    assert expected_result == result
     aiohttp_request_mock.assert_called_with(method='POST', 
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/stop', 
                                             json=expected_args,

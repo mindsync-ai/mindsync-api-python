@@ -19,6 +19,7 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
                         help='Mindsync API base url. If not specified an attempt to use MINDSYNC_BASE_URL variable will be performed '
                              f'(default: {DEFAULT_BASE_URL})')
     parser.add_argument('--prettify', action='store_true', help='Prettify json output (default: %(default)s)')
+    parser.add_argument('--meta', action='store_true', help='Include server response metadata to the output (default: %(default)s)')
     parser.add_argument('--log-level', default='INFO', help='Logging level from standard python logging module (default: %(default)s)')
     sp = parser.add_subparsers(title='subcommands', help='Use these subcommands to interact with the Mindsync platform')
     # profile
@@ -131,4 +132,12 @@ def _main():
 
     api = Api(args.api_key, args.base_url)
     cli_handler.bind(api)
-    args.handler(args)
+    rv = args.handler(**vars(args))
+    _print(rv, args)
+
+
+def _print(rv, args):
+    if args.prettify:
+        print(json.dumps(rv, indent=4, sort_keys=True))
+    else:
+        print(json.dumps(rv))
