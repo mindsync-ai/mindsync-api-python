@@ -21,11 +21,12 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     parser.add_argument('--prettify', action='store_true', help='Prettify json output (default: %(default)s)')
     parser.add_argument('--meta', action='store_true', help='Include server response metadata to the output (default: %(default)s)')
     parser.add_argument('--log-level', default='INFO', help='Logging level from standard python logging module (default: %(default)s)')
+    parser.add_argument('--proxy', help='Proxy url to use for communication')
     sp = parser.add_subparsers(title='subcommands', help='Use these subcommands to interact with the Mindsync platform')
     # profile
     profile_parser = sp.add_parser('profile', help='Mindsync platform profile related actions. By default returns user profile.')
     profile_parser.set_defaults(handler=cli_handler.profile)
-    profile_parser.add_argument('--id', default=None, help='User id to get profile for')
+    profile_parser.add_argument('--id', default=None, dest='user_id', help='User id to get profile for')
     profile_sp = profile_parser.add_subparsers(title='profile subcommands', help='Profile related subcommands')
     # profile/set
     profile_set_parser = profile_sp.add_parser('set', help='Sets profile properties.')
@@ -49,18 +50,18 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     # rig/info
     rig_info_parser = rig_sp.add_parser('info', help='Returns the rig info.')
     rig_info_parser.set_defaults(handler=cli_handler.rig_info)
-    rig_info_parser.add_argument('--id', default=None, required=True, help='Rig id to get info of')
+    rig_info_parser.add_argument('--id', default=None, dest='rig_id', required=True, help='Rig id to get info of')
     # rig/set
     rig_info_set_parser = rig_sp.add_parser('set', help='Sets account properties.')
     rig_info_set_parser.set_defaults(handler=cli_handler.set_rig, enable=None)
-    rig_info_set_parser.add_argument('--id', default=None, required=True, help='Rig id to get info of')
+    rig_info_set_parser.add_argument('--id', default=None, dest='rig_id', required=True, help='Rig id to get info of')
     rig_info_set_parser.add_argument('--enable', dest='enable', action='store_true', help='Enables rig')
     rig_info_set_parser.add_argument('--disable', dest='enable', action='store_false', help='Disables rig')
     rig_info_set_parser.add_argument('--power-cost', type=float, help='Sets the power cost')
     # rig/tariffs
     rig_info_set_parser = rig_sp.add_parser('tariffs', help='Get tariffs.')
     rig_info_set_parser.set_defaults(handler=cli_handler.rig_tariffs)
-    rig_info_set_parser.add_argument('--id', default=None, help='Rig id to get tariffs of')
+    rig_info_set_parser.add_argument('--id', default=None, dest='rig_id', help='Rig id to get tariffs of')
     # rent
     rent_parser = sp.add_parser('rent', help='Mindsync platform rents related actions. By default returns...')
     rent_sp = rent_parser.add_subparsers(title='rent subcommands', help='Rent related subcommands')
@@ -71,28 +72,46 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     # rent/start
     rent_start_parser = rent_sp.add_parser('start', help='Starts rent')
     rent_start_parser.set_defaults(handler=cli_handler.start_rent)
-    rent_start_parser.add_argument('--id', required=True, help='Rig id to rent')
+    rent_start_parser.add_argument('--rig-id', required=True, help='Rig id to rent')
     rent_start_parser.add_argument('--tariff', required=True, choices=['demo', 'dynamic', 'fixed'], help='Tarrif to use')
     # rent/stop
     rent_stop_parser = rent_sp.add_parser('stop', help='Stops rent certain rent')
     rent_stop_parser.set_defaults(handler=cli_handler.stop_rent)
-    rent_stop_parser.add_argument('--id', required=True, help='Rent id to stop in uuid format')
+    rent_stop_parser.add_argument('--id', required=True, dest='rent_id', help='Rent id to stop in uuid format')
     # rent/state
     rent_state_parser = rent_sp.add_parser('state', help='Returns rent state')
     rent_state_parser.set_defaults(handler=cli_handler.rent_state)
-    rent_state_parser.add_argument('--id', required=True, help='Rent id to retrieve state for in uuid format')
+    rent_state_parser.add_argument('--id', required=True, dest='rent_id', help='Rent id to retrieve state for in uuid format')
     # rent/info
     rent_info_parser = rent_sp.add_parser('info', help='Returns rent info')
     rent_info_parser.set_defaults(handler=cli_handler.rent_info)
-    rent_info_parser.add_argument('--id', required=True, help='Rent id to retrieve info for')
+    rent_info_parser.add_argument('--id', required=True, dest='rent_id', help='Rent id to retrieve info for')
     # rent/set
     rent_set_parser = rent_sp.add_parser('set', help='Sets rent parameters')
     rent_set_parser.set_defaults(handler=cli_handler.set_rent)
-    rent_set_parser.add_argument('--id', required=True, help='Rent id to retrieve info for')
+    rent_set_parser.add_argument('--id', required=True, dest='rent_id', help='Rent id to retrieve info for')
     rent_set_parser.add_argument('--enable', dest='enable', action='store_true', help='Enables rent')
     rent_set_parser.add_argument('--disable', dest='enable', action='store_false', help='Disables rent')
     rent_set_parser.add_argument('--login', help='Protect rent with login/password')
     rent_set_parser.add_argument('--password', help='Protect rent with login/password')
+
+    # code
+    code_parser = sp.add_parser('code', help='Mindsync platform codes related actions')
+    code_sp = code_parser.add_subparsers(title='code subcommands', help='Code related subcommands')
+    # code/list
+    code_list_parser = code_sp.add_parser('list', help='Returns all active codes list across the platform')
+    code_list_parser.set_defaults(handler=cli_handler.codes_list)
+    # code/create
+    code_create_parser = code_sp.add_parser('create', help='Create new code')
+    code_create_parser.set_defaults(handler=cli_handler.create_code)
+    #fixme: If ommited...
+    code_create_parser.add_argument('--file', help='Source file to use for code creation. If ommited...')
+    # code/run
+    code_run_parser = code_sp.add_parser('run', help='Run code')
+    code_run_parser.set_defaults(handler=cli_handler.run_code)
+    code_run_parser.add_argument('--id', required=True, help='Code id to run')
+    code_run_parser.add_argument('--rent-id', required=True, help='Rent id to run code on')
+
 
     args = parser.parse_args(args)
     effective_args = purge(vars(args))

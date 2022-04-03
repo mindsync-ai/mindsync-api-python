@@ -21,6 +21,11 @@ DEFAULT_BASE_URL = 'https://mainnet-api.mindsync.ai'
 API_VERSION = '1.0'
 
 
+RENT_DEMO = 'demo'
+RENT_FIXED = 'fixed'
+RENT_DYNAMIC = 'dynamic'
+
+
 class AsyncApi:
     def __init__(self, key, base_url=DEFAULT_BASE_URL):
         self.__logger = logging.getLogger(__name__)
@@ -134,7 +139,8 @@ class AsyncApi:
         '''Starts rent.
 
         @param rig_id Rig's identifier within the platform.
-        @param tariff_name The tariff name to start the rent within.
+        @param tariff_name The tariff name to start the rent within. 
+            Use RENT_DEMO, RENT_FIXED, RENT_DYNAMIC names to set the value.
         @return Returns the result of operation metadata.
         '''
         
@@ -200,15 +206,68 @@ class AsyncApi:
         return await self.__put(url, args, 'Unable to set rent parameters', None if 'meta' in kwargs else 'result')
 
 
-    async def __get(self, url, err_message, result_field='result'):
+    # CODES
+
+    async def codes_list(self, offset=1, limit=50, **kwargs):
+        '''Gets codes list.
+
+        @return Returns codes list in JSON.
+        '''
+
+        return await self.__get(url=urljoin(self.__base_url, f'/api/{API_VERSION}/codes'), 
+                                err_message='Unable to get codes list', 
+                                result_field=None if 'meta' in kwargs else 'result',
+                                proxy=kwargs.get('proxy', None))
+
+
+
+    async def create_code(self, file=None, private=False, **kwargs):
+        '''Create new code from file or deafult template.
+
+        @param file If str then used as filename to read and use content as code. If no file given default template is used.
+            If bytes is used as content directly.
+        @param private Whether created code is marked as private.
+        @return Returns the result of operation metadata.
+        '''
+        
+        data = aiohttp.FormData()
+        data.add_field('file', open(file, 'rb') if isinstance(file, str) else file, content_type='application/octet-stream')
+        data.add_field('isPrivate', str(private).lower())
+
+        return await self.__post_multipart(url=urljoin(self.__base_url, f'/api/{API_VERSION}/codes'),
+                                        #    data=dict(file=open(file, 'rb'), isPrivate=str(private).lower()),
+                                           data=data,
+                                           err_message='Unable to create code', 
+                                           result_field=None if 'meta' in kwargs else 'result',
+                                           proxy=kwargs.get('proxy', None))
+
+
+    async def run_code(self, code_id, rent_id, **kwargs):
+        '''Runs code with given id.
+
+        @param code_id The code id (hash) to use.
+        @param rent_id The rent id (hash) to use.
+        @return Returns the result of operation metadata.
+        '''
+
+        url = urljoin(self.__base_url, f'/api/{API_VERSION}/codes/{code_id}/run')
+        args = purge(dict(rentHash=rent_id))
+        if not args:
+            raise MindsyncApiError('Invalid arguments')
+
+        return await self.__post(url, args, 'Unable to run code', None if 'meta' in kwargs else 'result')
+
+
+    async def __get(self, url, err_message, result_field='result', proxy=None):
         logger = self.__logger
         logger.debug(f'Get [{url}]')
         try:
-            async with aiohttp.request(method='GET', url=url, 
-                                    headers={'api-key': self.__key}, 
-                                    raise_for_status=True) as resp:
+            async with aiohttp.request(method='GET', url=url, proxy=proxy,
+                                       headers={'api-key': self.__key}, 
+                                       raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
+                    # fixme: throw on error
                     return result[result_field] if result_field is not None else result
         except BaseException as e:
             self.__logger.debug(f'{err_message} [{repr(e)}]')
@@ -218,11 +277,11 @@ class AsyncApi:
 
     async def __put(self, url, args, err_message, result_field='result'):
         logger = self.__logger
-        logger.debug(f'Put [url: {url}, args {args}]')
+        logger.debug(f'Put [url: {url}; args {args}]')
         try:
             async with aiohttp.request(method='PUT', url=url, json=args, 
                                        headers={'api-key': self.__key}, 
-                                       raise_for_status=True) as resp:
+                                       raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
                     return result[result_field] if result_field is not None else result
@@ -233,11 +292,26 @@ class AsyncApi:
 
     async def __post(self, url, args, err_message, result_field='result'):
         logger = self.__logger
-        logger.debug(f'Post [url: {url}, args {args}]')
+        logger.debug(f'Post [url: {url}; args {args}]')
         try:
             async with aiohttp.request(method='POST', url=url, json=args, 
                                        headers={'api-key': self.__key}, 
-                                       raise_for_status=True) as resp:
+                                       raise_for_status=False) as resp:
+                    result = await resp.json()
+                    logger.debug(f'Result: {result}')
+                    return result[result_field] if result_field is not None else result
+        except BaseException as e:
+            self.__logger.debug(f'{err_message} [{repr(e)}]')
+            raise MindsyncApiError(err_message) from e    
+
+
+    async def __post_multipart(self, url, data, err_message, result_field='result', proxy=None):
+        logger = self.__logger
+        logger.debug(f'Post [url: {url}; data: {data}]')
+        try:
+            async with aiohttp.request(method='POST', url=url, data=data, proxy=proxy,
+                                       headers={'api-key': self.__key}, 
+                                       raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
                     return result[result_field] if result_field is not None else result
