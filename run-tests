@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
 
+
+OS_NAME="$(uname -s)"
+case "${OS_NAME}" in
+    Darwin*)
+        realpath() {
+            [[ $1 = /* ]] && echo "$1" || echo "${PWD}/${1#./}"
+        }
+    ;;
+esac
+
+
 SCRIPT_DIR=$(realpath "$(dirname "${0}")")
 VENV_DIR="${SCRIPT_DIR}/.venv"
 POSITIONAL=()
