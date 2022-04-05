@@ -56,6 +56,23 @@ api = Api(API_KEY)
 print(api.profile())
 ```
 
+## Examples
+```
+$ examples/run 
+Runs an example(s).
+
+Usage:
+    MINDSYNC_API_KEY=... MINDSYNC_BASE_URL=... examples/run EXAMPLE_NAME [EXAMPLE_NAME...]
+
+Arguments:
+    EXAMPLE_NAME   Example file name
+
+Options:
+    --help         Shows help message
+```
+
+`MINDSYNC_API_KEY=16b2e0cd2feacd54c8a872205e70cd56 MINDSYNC_BASE_URL=https://api.mindsync.ai examples/run create_n_run_code.py`
+
 ## REST API
 
 The REST API reference is available here https://app.swaggerhub.com/apis-docs/mindsync.ai/mindsync-api/1.2.0.

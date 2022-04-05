@@ -68,12 +68,3 @@ for FN in "${POSITIONAL[@]}" ; do
     echo -e "\033[0;36mRunning ${FN}...\033[0m"
     python "${FN}"
 done
-
-# if [ "${USE_TEST_PYPI}" -ne 0 ]; then
-#     echo -e "\033[0;33mUsing test repository\033[0m"
-#     twine upload --repository testpypi "${SCRIPT_DIR}/dist/*" "${POSITIONAL[@]}"
-# else
-#     echo -e "\033[0;33mUsing production repository\033[0m"
-#     twine upload "${SCRIPT_DIR}/dist/*" "${POSITIONAL[@]}"
-# fi
-
