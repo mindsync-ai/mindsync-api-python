@@ -71,7 +71,10 @@ Options:
     --help         Shows help message
 ```
 
-`MINDSYNC_API_KEY=16b2e0cd2feacd54c8a872205e70cd56 MINDSYNC_BASE_URL=https://api.mindsync.ai examples/run create_n_run_code.py`
+```
+cd examples
+MINDSYNC_API_KEY=16b2e0cd2feacd54c8a872205e70cd56 MINDSYNC_BASE_URL=https://api.mindsync.ai ./run create_n_run_code.py
+```
 
 ## REST API
 
