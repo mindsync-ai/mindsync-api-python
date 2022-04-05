@@ -27,10 +27,19 @@ RENT_DYNAMIC = 'dynamic'
 
 
 class AsyncApi:
-    def __init__(self, key, base_url=DEFAULT_BASE_URL):
+    def __init__(self, key, base_url=DEFAULT_BASE_URL, raise_for_error=False):
+        '''
+        Creates an API instance.
+
+        @param key The api key of an account.
+        @param base_url The apie server url.
+        @param raise_for_error Raise MindsyncApiError in case of error got from server.
+        '''
+
         self.__logger = logging.getLogger(__name__)
         self.__key = key
         self.__base_url = base_url
+        self.__raise = raise_for_error
 
 # PROFILE
 
@@ -167,14 +176,14 @@ class AsyncApi:
         return await self.__post(url, args, 'Unable to stop rent', None if 'meta' in kwargs else 'result')
 
 
-    async def rent_state(self, rent_id, **kwargs):
+    async def rent_state(self, uuid, **kwargs):
         '''Returns rent state.
 
-        @param rent_id Rents's identifier in uuid format.
+        @param uuid ??.
         @return Returns rent state in JSON.
         '''
 
-        url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{rent_id}')
+        url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{uuid}')
         return await self.__get(url, 'Unable to get rent state', None if 'meta' in kwargs else 'result')
 
 
@@ -267,8 +276,10 @@ class AsyncApi:
                                        raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
-                    # fixme: throw on error
+                    self.__raise_for_error(result)
                     return result[result_field] if result_field is not None else result
+        except MindsyncApiError as e:
+            raise
         except BaseException as e:
             self.__logger.debug(f'{err_message} [{repr(e)}]')
             raise MindsyncApiError(err_message) from e    
@@ -284,7 +295,10 @@ class AsyncApi:
                                        raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
+                    self.__raise_for_error(result)
                     return result[result_field] if result_field is not None else result
+        except MindsyncApiError as e:
+            raise
         except BaseException as e:
             self.__logger.debug(f'{err_message} [{repr(e)}]')
             raise MindsyncApiError(err_message) from e    
@@ -299,7 +313,10 @@ class AsyncApi:
                                        raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
+                    self.__raise_for_error(result)
                     return result[result_field] if result_field is not None else result
+        except MindsyncApiError as e:
+            raise
         except BaseException as e:
             self.__logger.debug(f'{err_message} [{repr(e)}]')
             raise MindsyncApiError(err_message) from e    
@@ -314,20 +331,30 @@ class AsyncApi:
                                        raise_for_status=False) as resp:
                     result = await resp.json()
                     logger.debug(f'Result: {result}')
+                    self.__raise_for_error(result)
                     return result[result_field] if result_field is not None else result
+        except MindsyncApiError as e:
+            raise
         except BaseException as e:
             self.__logger.debug(f'{err_message} [{repr(e)}]')
             raise MindsyncApiError(err_message) from e    
 
 
+    def __raise_for_error(self, result):
+        if self.__raise:
+            assert 'error' in result
+            if result['error'] is not None:
+                raise MindsyncApiError(result['error']['code'], result['error']['name'], result['error']['message'], result)
+
+
 class Api:
-    def __init__(self, key, base_url=DEFAULT_BASE_URL):
+    def __init__(self, key, base_url=DEFAULT_BASE_URL, raise_for_error=True):
         def create_method(func):
             def method(*args, **kwargs):
                 return asyncio.run(func(*args, **kwargs))
             return method
 
-        self.__async_api = AsyncApi(key, base_url)
+        self.__async_api = AsyncApi(key, base_url, raise_for_error)
         methods = inspect.getmembers(self.__async_api, predicate=inspect.ismethod)
         for m in methods:
             name, func = m

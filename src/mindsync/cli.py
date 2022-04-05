@@ -81,7 +81,7 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     # rent/state
     rent_state_parser = rent_sp.add_parser('state', help='Returns rent state')
     rent_state_parser.set_defaults(handler=cli_handler.rent_state)
-    rent_state_parser.add_argument('--id', required=True, dest='rent_id', help='Rent id to retrieve state for in uuid format')
+    rent_state_parser.add_argument('--uuid', required=True, dest='uuid', help='Rent id to retrieve state for in uuid format')
     # rent/info
     rent_info_parser = rent_sp.add_parser('info', help='Returns rent info')
     rent_info_parser.set_defaults(handler=cli_handler.rent_info)
@@ -109,7 +109,7 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     # code/run
     code_run_parser = code_sp.add_parser('run', help='Run code')
     code_run_parser.set_defaults(handler=cli_handler.run_code)
-    code_run_parser.add_argument('--id', required=True, help='Code id to run')
+    code_run_parser.add_argument('--id', required=True, dest='code_id', help='Code id to run')
     code_run_parser.add_argument('--rent-id', required=True, help='Rent id to run code on')
 
 

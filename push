@@ -13,7 +13,8 @@ Build and push library to pypi index.
 Usage:
     ${0} [OPTIONS] [EXTRA_ARGS]
 
-All the EXTRA_ARGS are passed to twine
+All the EXTRA_ARGS are passed to twine. 
+Credentials are in ~/.pypirc.
 
 Options:
     --test         Use test pypi

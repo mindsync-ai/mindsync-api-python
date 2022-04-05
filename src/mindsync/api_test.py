@@ -10,6 +10,7 @@ from io import IOBase
 API_KEY = 'an-api-key'
 USER_ID = 'an-user-id'
 RESPONSE_RV = dict(result=dict(first_name='Elvis', last_name='Presley'), whatever='whatever')
+ERROR_RESPONSE_RV = dict(error=dict(code=400, name='StatusError', message='Something wrong happens'), result=None, whatever='whatever')
 RIG_ID = 'a-rig-id'
 RENT_ID = 'a-rent-id'
 API_VERSION = '1.0'
@@ -17,6 +18,7 @@ PROXY_URL = 'http://localhost:8080'
 SOME_FN = 'filename.py'
 CODE_ID = 'code-id'
 RENT_ID = 'rent-id'
+UUID = 'uuid'
 
 
 @pytest.fixture
@@ -30,10 +32,22 @@ def sut(api_key):
 
 
 @pytest.fixture
+def raise_sut(api_key):
+    return AsyncApi(api_key, raise_for_error=True)
+
+
+@pytest.fixture
 def resp_mock():
         mock = create_autospec(spec=ClientResponse, spec_set=True, instance=True)
         mock.json.return_value = RESPONSE_RV
         return mock
+
+
+@pytest.fixture
+def err_resp_mock():
+    mock = create_autospec(spec=ClientResponse, spec_set=True, instance=True)
+    mock.json.return_value = ERROR_RESPONSE_RV
+    return mock
 
 
 @pytest.fixture
@@ -59,6 +73,13 @@ def form_data(open_mock):
 def aiohttp_request_mock(resp_mock):
     with patch('aiohttp.request') as mock:
         mock.return_value.__aenter__.return_value = resp_mock
+        yield mock
+
+
+@pytest.fixture
+def err_aiohttp_request_mock(err_resp_mock):
+    with patch('aiohttp.request') as mock:
+        mock.return_value.__aenter__.return_value = err_resp_mock
         yield mock
 
 
@@ -127,6 +148,19 @@ async def test_rigs_info_must_do_proper_http_request(sut, api_key, aiohttp_reque
 
 
 @pytest.mark.asyncio
+async def test_rigs_info_must_raise_on_error_if_raise_for_error_set(raise_sut, api_key, err_aiohttp_request_mock):
+    rv = ERROR_RESPONSE_RV
+    with pytest.raises(MindsyncApiError) as exc_info:
+        await raise_sut.rig_info(rig_id=RIG_ID)
+
+    exc = exc_info.value
+    assert exc.args[0] == rv['error']['code']
+    assert exc.args[1] == rv['error']['name']
+    assert exc.args[2] == rv['error']['message']
+    assert exc.args[3] == rv
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('args, expected_args, expected_result', [
                          (dict(rig_id=RIG_ID, enable=True, power_cost=0.25, meta=None), dict(isEnable=True, powerCost=0.25), RESPONSE_RV),
                          (dict(rig_id=RIG_ID, enable=True, power_cost=0.25), dict(isEnable=True, powerCost=0.25), RESPONSE_RV['result']),
@@ -159,6 +193,20 @@ async def test_start_rent_must_do_proper_http_request(sut, args, expected_args, 
 
 
 @pytest.mark.asyncio
+async def test_start_rent_must_raise_on_error_if_raise_for_error_set(raise_sut, api_key, err_aiohttp_request_mock):
+    rv = ERROR_RESPONSE_RV
+    args = dict(rig_id=RIG_ID, tariff_name='demo')
+    with pytest.raises(MindsyncApiError) as exc_info:
+        rv = await raise_sut.start_rent(**args)
+
+    exc = exc_info.value
+    assert exc.args[0] == rv['error']['code']
+    assert exc.args[1] == rv['error']['name']
+    assert exc.args[2] == rv['error']['message']
+    assert exc.args[3] == rv
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize('args, expected_args, expected_result', [(dict(rent_id=RENT_ID, meta=None), dict(hash=RENT_ID), RESPONSE_RV),
                                                                   (dict(rent_id=RENT_ID), dict(hash=RENT_ID), RESPONSE_RV['result'])])
 async def test_stop_rent_must_do_proper_http_request(sut, args, expected_args, expected_result, api_key, 
@@ -175,20 +223,20 @@ async def test_stop_rent_must_do_proper_http_request(sut, args, expected_args, e
 @pytest.mark.asyncio
 async def test_rent_state_must_do_proper_http_request(sut, api_key, aiohttp_request_mock, resp_mock):
     resp_mock.json.return_value = dict(result='OK')
-    result = await sut.rent_state(rent_id=RENT_ID)
+    result = await sut.rent_state(uuid=UUID)
 
     assert 'OK' == result
-    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}', proxy=None,
+    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{UUID}', proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
 @pytest.mark.asyncio
 async def test_rent_info_must_do_proper_http_request(sut, api_key, aiohttp_request_mock, resp_mock):
     resp_mock.json.return_value = dict(result='OK')
-    result = await sut.rent_state(rent_id=RENT_ID)
+    result = await sut.rent_state(uuid=UUID)
 
     assert 'OK' == result
-    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}', proxy=None,
+    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{UUID}', proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
@@ -205,6 +253,21 @@ async def test_set_rent_must_do_proper_http_request(sut, args, expected_args, ap
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}', 
                                             json=expected_args,
                                             headers={'api-key': api_key}, raise_for_status=False)
+
+
+@pytest.mark.asyncio
+async def test_set_rent_must_raise_on_error_if_raise_for_error_set(raise_sut, api_key, err_aiohttp_request_mock):
+    rv = ERROR_RESPONSE_RV
+    args = dict(rent_id=RENT_ID, enable=True, login='login', password='password')
+    with pytest.raises(MindsyncApiError) as exc_info:
+        rv = await raise_sut.set_rent(**args)
+
+    exc = exc_info.value
+    assert exc.args[0] == rv['error']['code']
+    assert exc.args[1] == rv['error']['name']
+    assert exc.args[2] == rv['error']['message']
+    assert exc.args[3] == rv
+
 
 # CODES
 
@@ -230,6 +293,20 @@ async def test_create_code_must_do_proper_http_request(sut, api_key, aiohttp_req
     assert RESPONSE_RV['result'] == result
     aiohttp_request_mock.assert_called_with(method='POST', url=expected_url, proxy=PROXY_URL, 
                                             data=form_data, headers={'api-key': api_key}, raise_for_status=False)
+
+
+@pytest.mark.asyncio
+async def test_set_rent_must_raise_on_error_if_raise_for_error_set(raise_sut, api_key, err_aiohttp_request_mock, open_mock):
+    rv = ERROR_RESPONSE_RV
+    args = dict(rent_id=RENT_ID, enable=True, login='login', password='password')
+    with pytest.raises(MindsyncApiError) as exc_info:
+        rv = await raise_sut.create_code(proxy=PROXY_URL, file=SOME_FN)
+
+    exc = exc_info.value
+    assert exc.args[0] == rv['error']['code']
+    assert exc.args[1] == rv['error']['name']
+    assert exc.args[2] == rv['error']['message']
+    assert exc.args[3] == rv
 
 
 @pytest.mark.asyncio

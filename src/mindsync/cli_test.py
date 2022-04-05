@@ -16,6 +16,7 @@ PROFILE_ID = 'a-profile-id'
 RENT_ID = 'a-rent-id'
 CODE_FN = 'does-not-matter'
 CODE_ID = 'code-id'
+UUID = 'the-uuid'
 
 
 @pytest.fixture
@@ -79,18 +80,19 @@ def unset_env_vars():
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, rig_id=RIG_ID, tariff='demo', handler='start_rent', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rent', 'stop', '--id', RENT_ID], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, rent_id=RENT_ID, handler='stop_rent', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
-                                                 (['--api-key', API_KEY, 'rent', 'state', '--id', RENT_ID], 
-                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, rent_id=RENT_ID, handler='rent_state', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
+                                                 (['--api-key', API_KEY, 'rent', 'state', '--uuid', UUID], 
+                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, uuid=UUID, handler='rent_state', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rent', 'info', '--id', RENT_ID], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, rent_id=RENT_ID, handler='rent_info', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rent', 'set', '--id', RENT_ID, '--enable', '--login', 'user', '--password', 'password'], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='set_rent', enable=True, login='user', password='password', rent_id=RENT_ID, api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
+                                                 # CODE
                                                  (['--api-key', API_KEY, 'code', 'list'], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='codes_list', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'code', 'create'], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='create_code', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False, file=None)), 
                                                  (['--api-key', API_KEY, 'code', 'run', '--id', CODE_ID, '--rent-id', RENT_ID], 
-                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='run_code', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False, id=CODE_ID, rent_id=RENT_ID)), 
+                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='run_code', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False, code_id=CODE_ID, rent_id=RENT_ID)), 
                                                 ])
 def test_parse_command_line_must_setup_right_command_handler(cli_handler_mock, cli_args, expected_args):
     args, _ = parse_command_line(cli_handler_mock, args=cli_args)
