@@ -1,6 +1,7 @@
 from mindsync.api import Api, RENT_FIXED, RENT_DYNAMIC
 from envs import API_KEY, BASE_URL
 import re, time, os, sys
+import requests
 
 
 CODE = b'''
@@ -28,7 +29,7 @@ def main():
     code_id = rv['result']['hash']
 
     print('\033[34m> Get rig price\033[0m')
-    rv = api.get_rig_price(rig_id=RIG_ID, meta=True)
+    rv = api.rig_price(rig_id=RIG_ID, meta=True)
     print(rv)
 
     print('\033[34m> Starting rent\033[0m')
@@ -59,10 +60,32 @@ def main():
     rv = api.run_code(code_id=code_id, rent_id=rent_id, meta=True)
     print(rv)
 
+    wait = True
+    while wait:
+        print(f'\033[34m> Getting rent states {rent_uuid}\033[0m')
+        rv = api.rent_states(uuid=rent_uuid, meta=True)
+        print(rv)
+        assert 'result' in rv, 'No result key'
+        assert 'stateList' in rv['result']
+        print(rv['result']['stateList'][-1]['name'])
+        if rv['result']['stateList'][-1]['name'] == 'code_execute_finished' or rv['result']['stateList'][-1]['name'] == 'code_execute_failed':
+            break
+
+        time.sleep(1)
+
     print(f'\033[34m> Stopping rent\033[0m')
     rv = api.stop_rent(rent_id=rent_id, meta=True)
     print(rv)
 
+    print(f'\033[34m> Getting code info\033[0m')
+    rv = api.code_info(code_id=code_id, meta=True)
+    print(rv)
+
+    print(f'\033[34m> Log\033[0m')
+    log_link = rv['result']['executionLogList'][-1]['link']
+    print(log_link)
+    r = requests.get(log_link)
+    print(r.content)
 
 if __name__ == '__main__':
     main()
