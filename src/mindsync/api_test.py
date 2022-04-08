@@ -122,7 +122,7 @@ async def test_set_profile_must_do_proper_http_request(sut, args, expected_args,
     assert 'OK' == result
     aiohttp_request_mock.assert_called_with(method='PUT', 
                                             url=f'{DEFAULT_BASE_URL}/api/1.0/users/client/profile', 
-                                            json=expected_args,
+                                            json=expected_args, proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 # RIGS
@@ -144,6 +144,15 @@ async def test_rigs_info_must_do_proper_http_request(sut, api_key, aiohttp_reque
 
     assert RESPONSE_RV['result'] == result
     aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rigs/{RIG_ID}/state', proxy=None,
+                                            headers={'api-key': api_key}, raise_for_status=False)
+
+
+@pytest.mark.asyncio
+async def test_rig_price_must_do_proper_http_request(sut, api_key, aiohttp_request_mock):
+    result = await sut.rig_price(rig_id=RIG_ID)
+
+    assert RESPONSE_RV['result'] == result
+    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rigs/{RIG_ID}/price', proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
@@ -172,7 +181,7 @@ async def test_set_rig_must_do_proper_http_request(sut, args, expected_args, exp
     assert expected_result == result
     aiohttp_request_mock.assert_called_with(method='PUT', 
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rigs/{RIG_ID}', 
-                                            json=expected_args,
+                                            json=expected_args, proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 # RENTS
@@ -188,7 +197,7 @@ async def test_start_rent_must_do_proper_http_request(sut, args, expected_args, 
     assert 'OK' == result
     aiohttp_request_mock.assert_called_with(method='POST', 
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/start', 
-                                            json=expected_args,
+                                            json=expected_args, proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
@@ -216,7 +225,7 @@ async def test_stop_rent_must_do_proper_http_request(sut, args, expected_args, e
     assert expected_result == result
     aiohttp_request_mock.assert_called_with(method='POST', 
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/stop', 
-                                            json=expected_args,
+                                            json=expected_args, proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
@@ -227,6 +236,16 @@ async def test_rent_state_must_do_proper_http_request(sut, api_key, aiohttp_requ
 
     assert 'OK' == result
     aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{UUID}', proxy=None,
+                                            headers={'api-key': api_key}, raise_for_status=False)
+
+
+@pytest.mark.asyncio
+async def test_rent_states_must_do_proper_http_request(sut, api_key, aiohttp_request_mock, resp_mock):
+    resp_mock.json.return_value = dict(result='OK')
+    result = await sut.rent_states(uuid=UUID)
+
+    assert 'OK' == result
+    aiohttp_request_mock.assert_called_with(method='GET', url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{UUID}/states', proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
@@ -251,7 +270,7 @@ async def test_set_rent_must_do_proper_http_request(sut, args, expected_args, ap
     assert 'OK' == result
     aiohttp_request_mock.assert_called_with(method='PUT', 
                                             url=f'{DEFAULT_BASE_URL}/api/{API_VERSION}/rents/{RENT_ID}', 
-                                            json=expected_args,
+                                            json=expected_args, proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)
 
 
@@ -296,7 +315,7 @@ async def test_create_code_must_do_proper_http_request(sut, api_key, aiohttp_req
 
 
 @pytest.mark.asyncio
-async def test_set_rent_must_raise_on_error_if_raise_for_error_set(raise_sut, api_key, err_aiohttp_request_mock, open_mock):
+async def test_create_code_must_raise_on_error_if_raise_for_error_set(raise_sut, api_key, err_aiohttp_request_mock, open_mock):
     rv = ERROR_RESPONSE_RV
     args = dict(rent_id=RENT_ID, enable=True, login='login', password='password')
     with pytest.raises(MindsyncApiError) as exc_info:
@@ -318,5 +337,15 @@ async def test_run_code_must_do_proper_http_request(sut, api_key, aiohttp_reques
 
     assert RESPONSE_RV['result'] == result
     expected_args = dict(rentHash=RENT_ID)
-    aiohttp_request_mock.assert_called_with(method='POST', url=expected_url,  json=expected_args, 
+    aiohttp_request_mock.assert_called_with(method='POST', url=expected_url,  json=expected_args, proxy=None,
+                                            headers={'api-key': api_key}, raise_for_status=False)
+
+
+@pytest.mark.asyncio
+async def test_code_info_must_do_proper_http_request(sut, api_key, aiohttp_request_mock):
+    result = await sut.code_info(code_id=CODE_ID)
+    expected_url = f'{DEFAULT_BASE_URL}/api/{API_VERSION}/codes/{CODE_ID}'
+
+    assert RESPONSE_RV['result'] == result
+    aiohttp_request_mock.assert_called_with(method='GET', url=expected_url, proxy=None,
                                             headers={'api-key': api_key}, raise_for_status=False)

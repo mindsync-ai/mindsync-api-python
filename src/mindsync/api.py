@@ -52,7 +52,8 @@ class AsyncApi:
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/users/client/profile' 
                       if user_id is None else f'/api/{API_VERSION}/users/profile/{user_id}')
-        return await self.__get(url, 'Unable to get profile', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get profile', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def set_profile(self, *, first_name=None, last_name=None, phone=None, gravatar=None, 
@@ -73,7 +74,8 @@ class AsyncApi:
             raise MindsyncApiError('Invalid arguments, nothing to set')
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/users/client/profile')
-        return await self.__put(url, args, 'Unable to set profile', None if 'meta' in kwargs else 'result')
+        return await self.__put(url, args, 'Unable to set profile', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 # RIGS
 
@@ -88,7 +90,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/my' if my else f'/api/{API_VERSION}/rigs')
-        return await self.__get(url, 'Unable to get rigs list', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rigs list', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def rig_info(self, rig_id, **kwargs):
@@ -99,7 +102,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/{rig_id}/state')
-        return await self.__get(url, 'Unable to get rig info', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rig info', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def rig_price(self, rig_id, **kwargs):
@@ -114,6 +118,7 @@ class AsyncApi:
                                 result_field=None if 'meta' in kwargs else 'result',
                                 proxy=kwargs.get('proxy', None))
 
+
     async def set_rig(self, rig_id, enable, power_cost, **kwargs):
         '''Sets rig parameters.
 
@@ -127,7 +132,8 @@ class AsyncApi:
         if not args:
             raise MindsyncApiError('Invalid arguments, nothing to set')
 
-        return await self.__put(url, args, 'Unable to set rig parameters', None if 'meta' in kwargs else 'result')
+        return await self.__put(url, args, 'Unable to set rig parameters', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def rig_tariffs(self, rig_id, **kwargs):
@@ -138,7 +144,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/tariffs' if rig_id is None else f'/api/2.0/rigs/{rig_id}/tariffs')
-        return await self.__get(url, 'Unable to get rig tarrifs', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rig tarrifs', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 # RENTS
 
@@ -153,7 +160,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/owner' if my else f'/api/{API_VERSION}/rents')
-        return await self.__get(url, 'Unable to get rents list', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rents list', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def start_rent(self, rig_id, tariff_name, **kwargs):
@@ -170,7 +178,8 @@ class AsyncApi:
         if not args:
             raise MindsyncApiError('Invalid arguments')
 
-        return await self.__post(url, args, 'Unable to start rent', None if 'meta' in kwargs else 'result')
+        return await self.__post(url, args, 'Unable to start rent', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def stop_rent(self, rent_id, **kwargs):
@@ -185,7 +194,8 @@ class AsyncApi:
         if not args:
             raise MindsyncApiError('Invalid arguments')
 
-        return await self.__post(url, args, 'Unable to stop rent', None if 'meta' in kwargs else 'result')
+        return await self.__post(url, args, 'Unable to stop rent', 
+                                 None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def rent_state(self, uuid, **kwargs):
@@ -196,7 +206,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{uuid}')
-        return await self.__get(url, 'Unable to get rent state', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rent state', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def rent_states(self, uuid, **kwargs):
@@ -207,7 +218,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{uuid}/states')
-        return await self.__get(url, 'Unable to get rent states', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rent states', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def rent_info(self, rent_id, **kwargs):
@@ -218,7 +230,8 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{rent_id}')
-        return await self.__get(url, 'Unable to get rent info', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get rent info', 
+                                None if 'meta' in kwargs else 'result', proxy=kwargs.get('proxy', None))
 
 
     async def set_rent(self, rent_id, enable, login, password, **kwargs):
@@ -235,11 +248,12 @@ class AsyncApi:
         if not args:
             raise MindsyncApiError('Invalid arguments, nothing to set')
 
-        return await self.__put(url, args, 'Unable to set rent parameters', None if 'meta' in kwargs else 'result')
+        return await self.__put(url, args, 'Unable to set rent parameters', 
+                                None if 'meta' in kwargs else 'result', 
+                                proxy=kwargs.get('proxy', None))
 
 
     # CODES
-
     async def codes_list(self, offset=1, limit=50, **kwargs):
         '''Gets codes list.
 
@@ -282,7 +296,9 @@ class AsyncApi:
         '''
 
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/codes/{code_id}')
-        return await self.__get(url, 'Unable to get code info', None if 'meta' in kwargs else 'result')
+        return await self.__get(url, 'Unable to get code info', 
+                                None if 'meta' in kwargs else 'result', 
+                                proxy=kwargs.get('proxy', None))
 
 
     async def run_code(self, code_id, rent_id, **kwargs):
@@ -320,11 +336,13 @@ class AsyncApi:
 
 
 
-    async def __put(self, url, args, err_message, result_field='result'):
+    async def __put(self, url, args, err_message, result_field='result', proxy=None):
         logger = self.__logger
         logger.debug(f'Put [url: {url}; args {args}]')
         try:
-            async with aiohttp.request(method='PUT', url=url, json=args, 
+            async with aiohttp.request(method='PUT', url=url, 
+                                       json=args, 
+                                       proxy=proxy,
                                        headers={'api-key': self.__key}, 
                                        raise_for_status=False) as resp:
                     result = await resp.json()
@@ -338,11 +356,11 @@ class AsyncApi:
             raise MindsyncApiError(err_message) from e    
 
 
-    async def __post(self, url, args, err_message, result_field='result'):
+    async def __post(self, url, args, err_message, result_field='result', proxy=None):
         logger = self.__logger
         logger.debug(f'Post [url: {url}; args {args}]')
         try:
-            async with aiohttp.request(method='POST', url=url, json=args, 
+            async with aiohttp.request(method='POST', url=url, json=args, proxy=proxy,
                                        headers={'api-key': self.__key}, 
                                        raise_for_status=False) as resp:
                     result = await resp.json()
