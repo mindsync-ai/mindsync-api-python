@@ -5,7 +5,6 @@ import requests
 
 
 CODE = b'''
-#!/usr/bin/env python
 
 print('Hi there!')
 
