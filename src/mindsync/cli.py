@@ -51,6 +51,10 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     rig_info_parser = rig_sp.add_parser('info', help='Returns the rig info.')
     rig_info_parser.set_defaults(handler=cli_handler.rig_info)
     rig_info_parser.add_argument('--id', default=None, dest='rig_id', required=True, help='Rig id to get info of')
+    # rig/price
+    rig_info_parser = rig_sp.add_parser('price', help='Returns the rig price.')
+    rig_info_parser.set_defaults(handler=cli_handler.rig_price)
+    rig_info_parser.add_argument('--id', default=None, dest='rig_id', required=True, help='Rig id to get price of')
     # rig/set
     rig_info_set_parser = rig_sp.add_parser('set', help='Sets account properties.')
     rig_info_set_parser.set_defaults(handler=cli_handler.set_rig, enable=None)
@@ -82,6 +86,10 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     rent_state_parser = rent_sp.add_parser('state', help='Returns rent state')
     rent_state_parser.set_defaults(handler=cli_handler.rent_state)
     rent_state_parser.add_argument('--uuid', required=True, dest='uuid', help='Rent id to retrieve state for in uuid format')
+    # rent/states
+    rent_state_parser = rent_sp.add_parser('states', help='Returns rent states')
+    rent_state_parser.set_defaults(handler=cli_handler.rent_states)
+    rent_state_parser.add_argument('--uuid', required=True, dest='uuid', help='Rent id to retrieve states for in uuid format')
     # rent/info
     rent_info_parser = rent_sp.add_parser('info', help='Returns rent info')
     rent_info_parser.set_defaults(handler=cli_handler.rent_info)
@@ -94,7 +102,6 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     rent_set_parser.add_argument('--disable', dest='enable', action='store_false', help='Disables rent')
     rent_set_parser.add_argument('--login', help='Protect rent with login/password')
     rent_set_parser.add_argument('--password', help='Protect rent with login/password')
-
     # code
     code_parser = sp.add_parser('code', help='Mindsync platform codes related actions')
     code_sp = code_parser.add_subparsers(title='code subcommands', help='Code related subcommands')
@@ -111,7 +118,10 @@ def parse_command_line(cli_handler, args=sys.argv[1:]):
     code_run_parser.set_defaults(handler=cli_handler.run_code)
     code_run_parser.add_argument('--id', required=True, dest='code_id', help='Code id to run')
     code_run_parser.add_argument('--rent-id', required=True, help='Rent id to run code on')
-
+    # code/info
+    code_run_parser = code_sp.add_parser('info', help='Get code info')
+    code_run_parser.set_defaults(handler=cli_handler.code_info)
+    code_run_parser.add_argument('--id', required=True, dest='code_id', help='Code id to get info of')
 
     args = parser.parse_args(args)
     effective_args = purge(vars(args))

@@ -59,6 +59,8 @@ def unset_env_vars():
                                                  Namespace(help=False, log_level='INFO', prettify=True, proxy=None, my=True, handler='rigs_list', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rig', 'info', '--id', RIG_ID], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='rig_info', rig_id=RIG_ID, api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
+                                                 (['--api-key', API_KEY, 'rig', 'price', '--id', RIG_ID], 
+                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='rig_price', rig_id=RIG_ID, api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rig', 'set', '--id', RIG_ID, '--enable'], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='set_rig', enable=True, power_cost=None, rig_id=RIG_ID, api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rig', 'set', '--id', RIG_ID, '--disable'], 
@@ -82,6 +84,8 @@ def unset_env_vars():
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, rent_id=RENT_ID, handler='stop_rent', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rent', 'state', '--uuid', UUID], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, uuid=UUID, handler='rent_state', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
+                                                 (['--api-key', API_KEY, 'rent', 'states', '--uuid', UUID], 
+                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, uuid=UUID, handler='rent_states', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rent', 'info', '--id', RENT_ID], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, rent_id=RENT_ID, handler='rent_info', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                  (['--api-key', API_KEY, 'rent', 'set', '--id', RENT_ID, '--enable', '--login', 'user', '--password', 'password'], 
@@ -93,6 +97,8 @@ def unset_env_vars():
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='create_code', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False, file=None)), 
                                                  (['--api-key', API_KEY, 'code', 'run', '--id', CODE_ID, '--rent-id', RENT_ID], 
                                                  Namespace(help=False, log_level='INFO', prettify=False, proxy=None, handler='run_code', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False, code_id=CODE_ID, rent_id=RENT_ID)), 
+                                                 (['--api-key', API_KEY, 'code', 'info', '--id', CODE_ID], 
+                                                 Namespace(help=False, log_level='INFO', prettify=False, proxy=None, code_id=CODE_ID, handler='code_info', api_key=API_KEY, base_url=DEFAULT_BASE_URL, meta=False)), 
                                                 ])
 def test_parse_command_line_must_setup_right_command_handler(cli_handler_mock, cli_args, expected_args):
     args, _ = parse_command_line(cli_handler_mock, args=cli_args)
