@@ -101,6 +101,16 @@ class AsyncApi:
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/{rig_id}/state')
         return await self.__get(url, 'Unable to get rig info', None if 'meta' in kwargs else 'result')
 
+    async def get_rig_price(self, rig_id, **kwargs):
+        '''Gets rig price.
+
+        @return Returns price of rig in JSON.
+        '''
+
+        return await self.__get(url=urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/{rig_id}/price'), 
+                                err_message='Unable to get rig price', 
+                                result_field=None if 'meta' in kwargs else 'result',
+                                proxy=kwargs.get('proxy', None))
 
     async def set_rig(self, rig_id, enable, power_cost, **kwargs):
         '''Sets rig parameters.

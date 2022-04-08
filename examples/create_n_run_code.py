@@ -27,6 +27,10 @@ def main():
     assert 'hash' in rv['result'], 'No hash key in result'
     code_id = rv['result']['hash']
 
+    print('\033[34m> Get rig price\033[0m')
+    rv = api.get_rig_price(rig_id=RIG_ID, meta=True)
+    print(rv)
+
     print('\033[34m> Starting rent\033[0m')
     rv = api.start_rent(rig_id=RIG_ID, tariff_name=RENT_DYNAMIC, meta=True)
     print(rv)
