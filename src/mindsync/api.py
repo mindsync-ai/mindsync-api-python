@@ -101,10 +101,12 @@ class AsyncApi:
         url = urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/{rig_id}/state')
         return await self.__get(url, 'Unable to get rig info', None if 'meta' in kwargs else 'result')
 
-    async def get_rig_price(self, rig_id, **kwargs):
+
+    async def rig_price(self, rig_id, **kwargs):
         '''Gets rig price.
 
-        @return Returns price of rig in JSON.
+        @param rig_id Rig's identifier within the platform.
+        @return Returns rig price information in JSON.
         '''
 
         return await self.__get(url=urljoin(self.__base_url, f'/api/{API_VERSION}/rigs/{rig_id}/price'), 
@@ -197,6 +199,17 @@ class AsyncApi:
         return await self.__get(url, 'Unable to get rent state', None if 'meta' in kwargs else 'result')
 
 
+    async def rent_states(self, uuid, **kwargs):
+        '''Returns rent state.
+
+        @param uuid ??.
+        @return Returns rent states in JSON.
+        '''
+
+        url = urljoin(self.__base_url, f'/api/{API_VERSION}/rents/{uuid}/states')
+        return await self.__get(url, 'Unable to get rent states', None if 'meta' in kwargs else 'result')
+
+
     async def rent_info(self, rent_id, **kwargs):
         '''Returns rent info.
 
@@ -259,6 +272,17 @@ class AsyncApi:
                                            err_message='Unable to create code', 
                                            result_field=None if 'meta' in kwargs else 'result',
                                            proxy=kwargs.get('proxy', None))
+
+
+    async def code_info(self, code_id, **kwargs):
+        '''Gets code info with given id.
+
+        @param code_id The code id (hash) to use.
+        @return Returns code info in JSON.
+        '''
+
+        url = urljoin(self.__base_url, f'/api/{API_VERSION}/codes/{code_id}')
+        return await self.__get(url, 'Unable to get code info', None if 'meta' in kwargs else 'result')
 
 
     async def run_code(self, code_id, rent_id, **kwargs):
