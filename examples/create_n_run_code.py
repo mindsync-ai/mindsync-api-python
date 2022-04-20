@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+
+'''The example shows how to create a custom python code, 
+start rent and execute the code by using Mindsync API.
+'''
+
+
 from mindsync.api import Api, RENT_FIXED, RENT_DYNAMIC
 from envs import API_KEY, BASE_URL
 import re, time, os, sys
@@ -27,7 +34,7 @@ def main():
     assert 'hash' in rv['result'], 'No hash key in result'
     code_id = rv['result']['hash']
 
-    print('\033[34m> Get rig price\033[0m')
+    print('\033[34m> Getting rig price\033[0m')
     rv = api.rig_price(rig_id=RIG_ID, meta=True)
     print(rv)
 
@@ -84,7 +91,9 @@ def main():
     log_link = rv['result']['executionLogList'][-1]['link']
     print(log_link)
     r = requests.get(log_link)
-    print(r.content)
+    print(str(r.content, 'utf-8'))
+    assert str(r.content, 'utf-8') == 'Hi there 12345!'
+
 
 if __name__ == '__main__':
     main()
